@@ -1,8 +1,14 @@
 package com.pavchishin.inventory.Utilites;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DbHelper extends SQLiteOpenHelper {
 
@@ -21,6 +27,9 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + DbEntry.FieldEntry.TABLE_NAME;
 
+    private static final String SQL_GET_LOCATIONS = "SELECT DISTINCT " +
+            DbEntry.FieldEntry.COLUMN_PART_LOCATION + " FROM " + DbEntry.FieldEntry.TABLE_NAME;
+
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -36,5 +45,24 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public List<String> onSpinner(SQLiteDatabase db) {
+        List<String> locations = new ArrayList<>();
+
+        try (Cursor cursor = db.rawQuery(SQL_GET_LOCATIONS, null)) {
+            if (cursor.moveToFirst()){
+                do {
+                    String lk = cursor.getString(0);
+                    if (lk.startsWith("1A") || lk.startsWith("2A")
+                            || lk.startsWith("3A") || lk.startsWith("2B")) {
+                        lk = lk.substring(0, 3) + "-XX-XX";
+                    } else
+                        locations.add(lk);
+                    locations.add(lk);
+                } while(cursor.moveToNext());
+            }
+        }
+        List<String> listDistinct = locations.stream().distinct().collect(Collectors.toList());
+        return listDistinct;
+    }
 
 }
